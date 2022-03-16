@@ -14,6 +14,7 @@ BEGIN_MESSAGE_MAP(CScaleWnd, CDialogEx)
 	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
+
 void CScaleWnd::ReSize(void)
 {
 	float fsp[2]{};
@@ -26,15 +27,20 @@ void CScaleWnd::ReSize(void)
 	fsp[1] = (float)Newp.y / m_heigth;
 	HWND  hwndChild = ::GetWindow(m_hWnd, GW_CHILD);
 	while (hwndChild) {
-		int woc = ::GetDlgCtrlID(hwndChild);//取得ID  
-		CRect rect = m_table[woc];
+		CWnd* wnd = FromHandle(hwndChild);
+		CRect rect = m_table[wnd];
 		rect.left = long(rect.TopLeft().x * fsp[0]);
 		rect.top = long(rect.TopLeft().y * fsp[1]);
 		rect.right = long(rect.BottomRight().x * fsp[0]);
 		rect.bottom = long(rect.BottomRight().y * fsp[1]);
-		GetDlgItem(woc)->MoveWindow(rect, TRUE);
+		wnd->MoveWindow(rect, TRUE);
 
-		CFont* oldFont = m_fontTable[woc];
+		CFont* oldFont = m_fontTable[wnd];
+		if (oldFont == nullptr)
+		{
+			hwndChild = ::GetWindow(hwndChild, GW_HWNDNEXT);
+			continue;
+		}
 		LOGFONT lf;
 		oldFont->GetLogFont(&lf);
 		float change = fsp[0] > fsp[1] ? fsp[1] : fsp[0];
@@ -43,11 +49,11 @@ void CScaleWnd::ReSize(void)
 
 		CFont* font = new CFont();
 		font->CreateFontIndirectW(&lf);
-		GetDlgItem(woc)->SetFont(font);
-		::DeleteObject(m_fontNewTable[woc]);
-		delete m_fontNewTable[woc];
-		m_fontNewTable[woc] = font;
+		wnd->SetFont(font);
+		::DeleteObject(m_fontNewTable[wnd]);
+		m_fontNewTable[wnd] = font;
 		hwndChild = ::GetWindow(hwndChild, GW_HWNDNEXT);
+		wnd->Invalidate();
 	}
 }
 
@@ -61,19 +67,26 @@ BOOL CScaleWnd::OnInitDialog()
 	CPoint  tlPoint, brPoint;
 	HWND  hwndChild = ::GetWindow(m_hWnd, GW_CHILD);
 	while (hwndChild) {
-		int woc = ::GetDlgCtrlID(hwndChild);//取得ID  
-		GetDlgItem(woc)->GetWindowRect(&rect);
-		LOGFONT lf;
-		GetDlgItem(woc)->GetFont()->GetLogFont(&lf);
+		CWnd* wnd = FromHandle(hwndChild);
+		wnd->GetWindowRect(&rect);
 		ScreenToClient(&rect);
 		tlPoint = rect.TopLeft();
 		brPoint = rect.BottomRight();
 		rect.SetRect(tlPoint, brPoint);
-		m_table.insert(std::make_pair(woc, rect));
+		m_table.insert(std::make_pair(wnd, rect));
+		LOGFONT lf;
+		CFont* pfont = wnd->GetFont();
+		if (pfont == nullptr)
+		{
+			pfont = new CFont();
+			pfont->CreatePointFont(200, L"宋体");
+		}
+		wnd->SetFont(pfont);
+		pfont->GetLogFont(&lf);
 		CFont* font = new CFont();
 		font->CreateFontIndirectW(&lf);
-		m_fontTable.emplace(std::make_pair(woc, GetDlgItem(woc)->GetFont()));
-		m_fontNewTable.emplace(std::make_pair(woc, font));
+		m_fontTable.emplace(std::make_pair(wnd, pfont));
+		m_fontNewTable.emplace(std::make_pair(wnd, font));
 		hwndChild = ::GetWindow(hwndChild, GW_HWNDNEXT);
 	}
 	return TRUE;
@@ -82,9 +95,32 @@ BOOL CScaleWnd::OnInitDialog()
 
 void CScaleWnd::OnSize(UINT nType, int cx, int cy) {
 	CDialogEx::OnSize(nType, cx, cy);
+	if (m_table.size() == 0)
+	{
+		return;
+	}
 	//窗口最小化不操作
-	if (nType != SIZE_MINIMIZED)
+	if (nType != SIZE_MINIMIZED && this->IsWindowVisible())
 	{
 		ReSize();
+	}
+}
+
+
+void CScaleWnd::SetFont(CWnd* c, CFont* font)
+{
+	CFont* oldFont = c->GetFont();
+	c->SetFont(font);
+	if (m_fontTable[c] != nullptr) {
+		::DeleteObject(m_fontTable[c]);
+		m_fontTable[c] = font;
+	}
+	if (m_fontNewTable[c] != nullptr) {
+		::DeleteObject(m_fontNewTable[c]);
+	}
+	m_fontNewTable[c] = font;
+	if (oldFont != nullptr)
+	{
+		::DeleteObject(oldFont);
 	}
 }
