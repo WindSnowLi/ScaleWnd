@@ -50,7 +50,7 @@ void CScaleWnd::ReSize(void)
 		CFont* font = new CFont();
 		font->CreateFontIndirectW(&lf);
 		wnd->SetFont(font);
-		::DeleteObject(m_fontNewTable[wnd]);
+		m_fontNewTable[wnd]->DeleteObject();
 		m_fontNewTable[wnd] = font;
 		hwndChild = ::GetWindow(hwndChild, GW_HWNDNEXT);
 		wnd->Invalidate();
