@@ -15,7 +15,7 @@
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
-class CAboutDlg : public CScaleWnd
+class CAboutDlg : public CDialogEx
 {
 public:
 	CAboutDlg();
@@ -33,16 +33,16 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-CAboutDlg::CAboutDlg() : CScaleWnd(IDD_ABOUTBOX)
+CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
 {
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CScaleWnd::DoDataExchange(pDX);
+	CDialogEx::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(CAboutDlg, CScaleWnd)
+BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
 
@@ -51,17 +51,17 @@ END_MESSAGE_MAP()
 
 
 CScaleWndDlg::CScaleWndDlg(CWnd* pParent /*=nullptr*/)
-	: CScaleWnd(IDD_SCALEWND_DIALOG, pParent)
+	: CDialogEx(IDD_SCALEWND_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
 void CScaleWndDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CScaleWnd::DoDataExchange(pDX);
+	CDialogEx::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(CScaleWndDlg, CScaleWnd)
+BEGIN_MESSAGE_MAP(CScaleWndDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
@@ -73,7 +73,7 @@ END_MESSAGE_MAP()
 
 BOOL CScaleWndDlg::OnInitDialog()
 {
-	CScaleWnd::OnInitDialog();
+	CDialogEx::OnInitDialog();
 
 	// 将“关于...”菜单项添加到系统菜单中。
 
@@ -101,6 +101,8 @@ BOOL CScaleWndDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+	// 记录窗口信息
+	SCALE_CPP_INI
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -113,7 +115,7 @@ void CScaleWndDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 	else
 	{
-		CScaleWnd::OnSysCommand(nID, lParam);
+		CDialogEx::OnSysCommand(nID, lParam);
 	}
 }
 
@@ -142,7 +144,7 @@ void CScaleWndDlg::OnPaint()
 	}
 	else
 	{
-		CScaleWnd::OnPaint();
+		CDialogEx::OnPaint();
 	}
 }
 
@@ -156,5 +158,10 @@ HCURSOR CScaleWndDlg::OnQueryDragIcon()
 
 void CScaleWndDlg::OnSize(UINT nType, int cx, int cy)
 {
-	CScaleWnd::OnSize(nType, cx, cy);
+	CDialogEx::OnSize(nType, cx, cy);
+	// 调用重设位置、大小
+	SCALE_ONSIZE
 }
+
+// 执行重设位置、大小
+RESIZE(CScaleWndDlg)

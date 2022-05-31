@@ -9,7 +9,7 @@
 #include "CScaleWnd.h"
 
 // CScaleWndDlg 对话框
-class CScaleWndDlg : public CScaleWnd
+class CScaleWndDlg : public CDialogEx
 {
 	// 构造
 public:
@@ -34,6 +34,9 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+
+	// 初始化变量
+	SCALE_HEAD
 public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 };
