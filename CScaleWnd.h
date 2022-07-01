@@ -22,6 +22,7 @@
     while (hwndChild)                                      \
     {                                                      \
         CWnd *wnd = FromHandle(hwndChild);                 \
+            if (wnd == NULL) {continue;}                         \
         wnd->GetWindowRect(&rect);                         \
         ScreenToClient(&rect);                             \
         tlPoint = rect.TopLeft();                          \
@@ -62,6 +63,7 @@
         while (hwndChild)                                        \
         {                                                        \
             CWnd *wnd = FromHandle(hwndChild);                   \
+            if (wnd == NULL) {continue;}                         \
             CRect rect = m_scale_table[wnd];                           \
             rect.left = long(rect.TopLeft().x * fsp[0]);         \
             rect.top = long(rect.TopLeft().y * fsp[1]);          \
